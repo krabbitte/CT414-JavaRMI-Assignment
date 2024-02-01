@@ -42,43 +42,41 @@ public class ExamEngine implements ExamServer {
             4567890, "pass_word"
         ));
 
+        // Initialize token variables
         studentTokens = new HashMap<>();
         tokensIssued = new HashMap<>();
 
+        // Initialize Assessment variables
         questionAnswers = new HashMap<>();
         studentAssessments = new HashMap<>();
         for (Integer studentID : students) {
             // Create Questions
-            Question questionA = new QuestionImpl(0, "What colour is the sky?",
-                    new String[] { "Blue", "Red", "Green" });
+            String[] answerSetA = new String[] { "Blue", "Red", "Green" };
+            Question questionA = new QuestionImpl(0, "What colour is the sky?", answerSetA);
             questionAnswers.put(questionA, 0);
-            Question questionB = new QuestionImpl(1, "What colour is the sea?",
-                    new String[] { "Red", "Blue", "Green" });
+            
+            String[] answerSetB = new String[] { "Red", "Blue", "Green" };
+            Question questionB = new QuestionImpl(1, "What colour is the sea?", answerSetB);
             questionAnswers.put(questionB, 1);
 
             // Create Assessment with created questions
-            List<Question> questions = new ArrayList<>(Arrays.asList(
-                    questionA,
-                    questionB));
+            List<Question> questions = new ArrayList<>(Arrays.asList(questionA, questionB));
             Date dueDate = new Date();
             AssessmentImpl assessment = new AssessmentImpl(studentID, "Assignment 1", "CT420", dueDate, questions);
             studentAssessments.put(studentID, Arrays.asList(assessment));
         }
     }
 
-    // Implement the methods defined in the ExamServer interface...
     // Return an access token that allows access to the server for some time period
     public int login(int studentid, String password) throws UnauthorizedAccess, RemoteException {
         // Check that student exists
         if (!this.students.contains(studentid)) {
             throw new UnauthorizedAccess("Student ID" + studentid + "does not exist");
         }
-
         // Check that student has not been issued a token already
         if (this.studentTokens.containsKey(studentid)) {
             throw new UnauthorizedAccess("Student " + studentid + " is already logged in.");
         }
-
         // Check password
         if (this.studentPasswords.get(studentid).equals(password)) {
             // Generate and return token
@@ -86,8 +84,7 @@ public class ExamEngine implements ExamServer {
             this.studentTokens.put(studentid, newToken);
             this.tokensIssued.put(newToken, new Date());
             return newToken;
-        } 
-
+        }
         throw new UnauthorizedAccess("Password for user " + studentid + " is incorrect");
     }
 
@@ -97,17 +94,14 @@ public class ExamEngine implements ExamServer {
         if (!this.students.contains(studentid)) {
             throw new UnauthorizedAccess("Student ID" + studentid + "does not exist");
         }
-    
         // Check that student has been issued a token
         if (!this.studentTokens.containsKey(studentid)) {
             throw new UnauthorizedAccess("Student " + studentid + " is already logged in.");
         }
-
         // Check that student has available assessments
         if (!this.studentAssessments.containsKey(studentid)) {
             throw new NoMatchingAssessment("No matching assessments");
         }
-
         // Return assessment summary
         List<Assessment> assessments = this.studentAssessments.get(studentid);                    
         List<String> assessmentStrings = new ArrayList<>();
@@ -123,25 +117,21 @@ public class ExamEngine implements ExamServer {
         if (!this.students.contains(studentid)) {
             throw new UnauthorizedAccess("Student " + studentid + "does not exist");
         }
-
         // Check that the student has previously been issued a login token
         if (!this.studentTokens.containsKey(studentid)) {
             throw new UnauthorizedAccess("Student is not logged in");
         }
-
         // Check that the student's login token is accurate to our records
         if (!this.studentTokens.get(studentid).equals(token)) {
             throw new UnauthorizedAccess("Student token does not match records");
         }
-
         // Check that the student has assessments
         if (!this.studentAssessments.containsKey(studentid)) {
             throw new NoMatchingAssessment("No assessments found for student " + studentid);
         }
-        
         // Attempt to retrieve requested assessment
         for (Assessment assessment : this.studentAssessments.get(studentid)) {
-            if (assessment.getInformation().contains(courseCode)) {
+            if (assessment.getInformation().contains(courseCode.toUpperCase())) {
                 return assessment;
             }
         }
@@ -154,22 +144,18 @@ public class ExamEngine implements ExamServer {
         if (!this.students.contains(studentid)) {
             throw new UnauthorizedAccess("Student " + studentid + "does not exist");
         }
-
         // Check that the student has previously been issued a login token
         if (!this.studentTokens.containsKey(studentid)) {
             throw new UnauthorizedAccess("Student is not logged in");
         }
-
         // Check that the student's login token is accurate to our records        
         if (!this.studentTokens.get(studentid).equals(token)) {
             throw new UnauthorizedAccess("Student token does not match records");
         }
-
         // Check that the student has assessments
         if (!this.studentAssessments.containsKey(studentid)) {
             throw new NoMatchingAssessment("Student has no assessments to submit");
         }
-
         // Write completed assessment to file
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(completed.getAssociatedID() + ".txt");

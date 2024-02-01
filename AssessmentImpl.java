@@ -48,15 +48,14 @@ public class AssessmentImpl implements Assessment {
                 return question;
             }
         }
-
         throw new InvalidQuestionNumber();
     }
 
     @Override
     public void selectAnswer(int questionNumber, int optionNumber) throws InvalidQuestionNumber, InvalidOptionNumber {
-        if (questionNumber > this.questions.size() || questionNumber < 0)
+        if (questionNumber > this.questions.size() || questionNumber < 0) {
             throw new InvalidQuestionNumber();
-        
+        }
         for (Question question : this.questions) {
             if (question.getQuestionNumber() == questionNumber) {
                 if (optionNumber > question.getAnswerOptions().length  || optionNumber < 0)
